@@ -1,0 +1,80 @@
+model: &model
+  checkpoint_path:
+  embedder:
+    name: cnn
+    out_channels: [4]
+    cnn_dropout_p: 0.1
+    pool_sizes: [1]
+    kernel_sizes: [3]
+  landmark:
+    name: unet_hierarchical_patch
+    encoder_embedding_widths: [128, 64, 32, 16, 8, 4, 2]
+    encoder_embedding_dims: [8, 16, 32, 64, 128, 256, 512]
+    gnn_dropout_p: 0.5
+    node_embedding_dim: 128
+    node_hidden_dim: 128
+    classifier_hidden_dim: 32
+    classifier_dropout_p: 0.5
+    num_gnn_layers: 3
+    gnn_jk_mode: last
+    residual: True
+    output_activation: "logit"
+
+train: &train
+  seed: 200
+  num_epochs: 100
+  checkpoint_step: 20000
+  batch_size: 1
+  num_workers: 4
+  use_wandb: False
+  wand_project_name: <wandb_project_name>
+  wandb_mode: offline
+  wandb_run_name: <wandb_run_name>
+  wandb_log_steps: 1000
+
+  criterion:
+    WeightedBceWithLogits:
+      loss_weight: 1
+      reduction: none
+      ones_weight: 9000  # 224x224 and 7aux graphs results in 72k nodes which divided by 8 ones, is 9000
+    ExpectedLandmarkMse:
+      loss_weight: 10
+
+  optimizer: &optimizer
+    name: adam
+    lr: 0.001  # 1e-3
+    weight_decay: 0.0001  # 1e-4
+
+  lr_schedule: &lr_schedule
+    name: 'reduce_lr_on_plateau'
+    mode: 'min'
+    factor: 0.5  # Factor by which the learning rate will be reduced
+    patience: 2 # Number of epochs with no improvement after which learning rate will be reduced
+    threshold: 0.01  # Threshold for measuring the new optimum, to only focus on significant changes
+    min_lr: 0.000001  # 1e-6
+    verbose: True
+
+# Evaluation metrics
+eval: &eval
+  # Report these metrics
+  standards: [ "balancedaccuracy", "landmarkcoorderror"]
+  # Save checkpoints based on this metric
+  standard: "balancedaccuracy"
+  # Save checkpoints based on whether the metric is to be maximized or minimized
+  minimize: False
+
+data: &data
+  name: uiclvlandmark
+  data_dir: <path_to_data_dir>
+  num_aux_graphs: 7
+  data_info_file: <path_to_labels_dir> # Please read the constructor of the corresponding dataset in datasets.py to see what's needed here
+  main_graph_type: 'grid'  # 'grid-diagonal' / 'grid'
+  aux_graph_type: 'grid'   # 'grid-diagonal' / 'grid'
+  use_coordinate_graph: False
+  use_connection_nodes: False
+  use_main_graph_only: False
+#  flip_p: 0.0
+
+  transform: &transform
+    image_size: 224
+    make_gray: True # This needs to be set to TRUE for the UIC dataset
