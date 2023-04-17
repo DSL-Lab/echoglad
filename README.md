@@ -48,7 +48,7 @@ pip install -r requirements.txt
 
 ## Dataset
 
-We use the UIC public LV landmark dataset in this project. Access it [here](https://data.unityimaging.net/). Download the dataset to a convenient location and provide its directory in the config file as described in [Config File](#config-file).
+We use the UIC public LV landmark dataset in this project. Access it [here](https://data.unityimaging.net/). Download the dataset to a convenient location and provide its directory in the config file as described in [Config File](#config-file). You additionally need the per-image pixel to mm ratio, which is not originally provided in the dataset. Please ask the dataset authors for 01_database_physical.csv.
 
 ## Training
 
