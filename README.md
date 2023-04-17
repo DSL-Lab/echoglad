@@ -26,8 +26,9 @@ To reproduce our MICCAI 2023 results on the publicly available UIC dataset, foll
 2. [Download the dataset](#dataset)
 3. Update the dataset path in the `default.yml` config file (`configs/` directory) under `data.data_dir`
 4. Update the dataset labels path in the `default.yml` config file (`configs/` directory) under `data.data_info_file`
-4. Ensure the `model.checkpoint_path` in the config file points to `./trained_models/miccai2023.pth`
-5. Run the command:
+5. Download `miccai2023.pth` from the releases page
+6. Ensure the `model.checkpoint_path` in the config file points to `miccai2023.pth`
+7. Run the command:
 ```
 python run.py --config_path ./configs/default.yml --save_dir <dir_to_save_ouput_to> --eval_only True --eval_data_type test"
 ```
